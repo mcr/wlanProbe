@@ -24,19 +24,19 @@ if [ ! -d "${dir}/micropython-lib" ]; then
 fi
 echo "Checking for ESP-IDF repo"
 if [ ! -d "${dir}/esp-idf" ]; then
-	git clone "${espidfURL}" "${dir}/esp-idf"
-	cd "${dir}/esp-idf"
-	echo "Using supported esp-idf hash ${espidfHash}"
+    git clone "${espidfURL}" "${dir}/esp-idf"
+    cd "${dir}/esp-idf"
+    echo "Using supported esp-idf hash ${espidfHash}"
     git checkout "${espidfHash}"
     git submodule update --init --recursive
     cd - >> /dev/urandom
 fi
 echo "Getting the berkeley db lib for ESP32"
 if [ ! -d "${dir}/micropython/lib/berkeley-db-1.xx/db" ]; then
-	cd "${dir}/micropython"
-	git submodule init lib/berkeley-db-1.xx
-	git submodule update
-	cd - >> /dev/urandom
+    cd "${dir}/micropython"
+    git submodule init lib/berkeley-db-1.xx
+    git submodule update
+    cd - >> /dev/urandom
 fi
 
 ## Get the ESP32 toolchain
@@ -49,10 +49,10 @@ fi
 echo "Setting up port ${port^^} with symlinks"
 cd "${portsModules}"
 if [ ! -L hashlib ]; then
-	ln -s ../../../../micropython-lib/hashlib .
+    ln -s ../../../../micropython-lib/hashlib .
 fi
 if [ ! -L boot.py ]; then
-	ln -s ../../../../wlanProbing.py boot.py
+    ln -s ../../../../wlanProbing.py boot.py
 fi
 cd - >> /dev/urandom
 
