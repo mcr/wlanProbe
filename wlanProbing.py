@@ -624,23 +624,17 @@ def mqttErrorMessage(inMqttClientUniqueId,
 
 
 def mqttPublish(ioMqttCounter, inMqttClient, inMqttTopic, ioMqttData):
-    outData = str(ioMqttCounter) + ", "
-    printDebug("ioMqttData[0]", ioMqttData[0])
-    firstList = ioMqttData.pop(0)
-    if isinstance(firstList, list):
-        for i in firstList:
-            outData.join(str(i))
-            outData.join(", ")
-    else:
-        outData.join(firstList)
-    printDebug("outData", outData)
-    inMqttClient.publish(inMqttTopic, outData)
-    ioMqttCounter += 1
-    if len(ioMqttData) > 0:
-        ioMqttCounter = mqttPublish(ioMqttCounter,
-                                    inMqttClient,
-                                    inMqttTopic,
-                                    ioMqttData)
+    printDataDebug("ioMqttData", ioMqttData)
+
+    for item in ioMqttData:
+        #printDataDebug("item", str(item))
+        #printDataDebug("counter", str(ioMqttCounter))
+        item.insert(0, ioMqttCounter)
+        outData = str(item)
+        #printDataDebug("outData", outData)
+        inMqttClient.publish(inMqttTopic, outData)
+        ioMqttCounter += 1
+
     return ioMqttCounter
 
 
