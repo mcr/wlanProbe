@@ -42,7 +42,7 @@ CONFIG = {
     "mqttClientUniqueId": "wlanProbe_" + PLATFORM + "_" + UNIQ_ID,
     "mqttGroup": "wlanProbe",
     "mqttIdentifiers": ["mqttArea", "mqttClientUniqueId", "mqttGroup"],
-    "mqttPassword": "ljseoifrj98324jsdj8932u"
+    "mqttPassword": "ljseoifrj98324jsdj8932u",
     "mqttReceivedMax": 5,
     "mqttSSL": True,
     "mqttConfigTopic": "wlanProbe/Config",
