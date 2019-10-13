@@ -20,6 +20,7 @@ import sys
 import socket
 import time
 import ubinascii
+import uping
 
 from umqtt.robust import MQTTClient
 from random import randint
@@ -557,6 +558,7 @@ def mqttCommit(ioMqttCounter,
                inMqttTopic,
                inMqttClientUniqueId,
                ioMqttData):
+    uping.ping(inMqttBroker, 1)
     mqttClient = MQTTClient(inMqttClientUniqueId,
                             inMqttBroker,
                             ssl=CONFIG["mqttSSL"],
