@@ -11,34 +11,34 @@ class mQ:
         self._uniqueID = inUniqueID
 
     def addMsg(self, inNewMessage, inPriority="low"):
-		'''
-		Receives a dictionary and saves in a message queue.
-		Dictonary looks like:
-		{ "seconds": 1337, "messageType": "Foo", "messageContent": "Bar",} 
-		'''
-		if isinstance(inNewMessage, dict):
-			if inPriority == "low" and self._ntpHasBeenSet:
-				self._lowPrioQ.append(inNewMessage)
-			elif inPriority == "high" and self._ntpHasBeenSet::
-				self._lowPrioQnoNTP.append(inNewMessage)
-			elif inPriority == "low" and not self._ntpHasBeenSet:
-				self._lowPrioQ.append(inNewMessage)
-			else:
-				self._highPrioQ.append(inNewMessage)
-		else:
-			print("Incoming message is not a dictonary.")
-			sys.exit(1)
+        '''
+        Receives a dictionary and saves in a message queue.
+        Dictonary looks like:
+        { "seconds": 1337, "messageType": "Foo", "messageContent": "Bar",}
+        '''
+        if isinstance(inNewMessage, dict):
+            if inPriority == "low" and self._ntpHasBeenSet:
+                self._lowPrioQ.append(inNewMessage)
+            elif inPriority == "high" and self._ntpHasBeenSet:
+                self._lowPrioQnoNTP.append(inNewMessage)
+            elif inPriority == "low" and not self._ntpHasBeenSet:
+                self._lowPrioQ.append(inNewMessage)
+            else:
+                self._highPrioQ.append(inNewMessage)
+        else:
+            print("Incoming message is not a dictonary.")
+            sys.exit(1)
 
-	def _fixTimestamp():
-		for msg in self._highPrioQnoNTP:
-			msg["seconds"] += self._timeDiff
-			addMsg(msg, "high")
-			self._highPrioQnoNTP.pop(0)
-		for i in self._lowPrioQnoNTP:
-			msg["seconds"] += self._timeDiff
-			addMsg(msg, "low")
-			self._lowPrioQnoNTP.pop(0)
-			
+    def _fixTimestamp():
+        for msg in self._highPrioQnoNTP:
+            msg["seconds"] += self._timeDiff
+            addMsg(msg, "high")
+            self._highPrioQnoNTP.pop(0)
+            for i in self._lowPrioQnoNTP:
+                msg["seconds"] += self._timeDiff
+                addMsg(msg, "low")
+                self._lowPrioQnoNTP.pop(0)
+
     def garbageCollectList(inList):
         index = 1
         lengthList = len(inList)
@@ -55,34 +55,34 @@ class mQ:
     def _generateMessageList(self,
                             inMessage,
                             ):
-		'''
-		Receives a single message in a dictonary and returns one.
-		'''
+        '''
+        Receives a single message in a dictonary and returns one.
+        '''
         (year, month, day,
          hour, minute, seconds,
          weekday, yearday) = time.localtime(inMessage["seconds"])
         outWlanData = {
-					"messageCounter": self._messageCounter,
-					"year": year,
-					"month": month,
-					"day": day,
-					"hour:" hour,
-					"minute": minute,
-					"seconds": seconds,
-					"weekday": weekday,
-					"yearday": yearday,
-					"uniqueID": self._uniqueID,
-					"messageType": inMessage["messageType"],
-					"messageContent": inMessage["messageContent"],
-                   }
+            "messageCounter": self._messageCounter,
+            "year": year,
+            "month": month,
+            "day": day,
+            "hour": hour,
+            "minute": minute,
+            "seconds": seconds,
+            "weekday": weekday,
+            "yearday": yearday,
+            "uniqueID": self._uniqueID,
+            "messageType": inMessage["messageType"],
+            "messageContent": inMessage["messageContent"],
+        }
         self._messageCounter += 1
         printDebug("outWlanData", outWlanData)
         return outWlanData
 
     def getMsg(self):
-		'''
-		Returns one dictonary if there is a message.
-		'''
+        '''
+        Returns one dictonary if there is a message.
+        '''
         totalL, lenHp, _ = self.lenQ()
         if totalL == 0:
             output = {}
@@ -100,7 +100,7 @@ class mQ:
         totalL = lenHp + lenLp
         return totalL, lenHp, lenLp
 
-	def lenQnoNTP(self):
+    def lenQnoNTP(self):
         lenHp = len(self._highPrioQnoNTP)
         lenLp = len(self._lowPrioQnoNTP)
         totalL = lenHp + lenLp
