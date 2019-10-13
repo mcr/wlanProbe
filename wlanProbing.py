@@ -53,11 +53,12 @@ CONFIG = {
     "mqttConfigTopic": "wlanProbe/Config",
     "mqttMeasureTopic": "wlanProbe/Measurement",
     "mqttUser": "wlanprobe",
+    "mqttSendLimit" : 64,
     "wlanSecret": "sehfikowheuirh8923",
     "wlanSsid": "TheInternet",
     }
 
-GLOBAL_MESSAGE_QUEUE = messageQueue(CONFIG["mqttClientUniqueId"])
+GLOBAL_MESSAGE_QUEUE = messageQueue.mQ(CONFIG["mqttClientUniqueId"])
 
 
 '''
@@ -589,49 +590,51 @@ def mqttSendQueue(inMqttBroker,
     topic = CONFIG["mqttMeasureTopic"]
     msgCount = 0
 
-    mqttClient = MQTTClient(GLOBAL_MESSAGE_QUEUE.uniqueID,
+    mqttClient = MQTTClient(GLOBAL_MESSAGE_QUEUE.uniqueID(),
                             inMqttBroker,
                             ssl=CONFIG["mqttSSL"],
                             user=CONFIG["mqttUser"],
                             password=CONFIG["mqttPassword"],
                             )
     mqttLastWill = ("-1, -1, -1, -1, -1, -1, -1, -1, -1, " +
-                    inMqttClientUniqueId + ", " +
+                    GLOBAL_MESSAGE_QUEUE.uniqueID() + ", " +
                     MESSAGE_TYPES["mqttErrorMessage"] + ", " +
                     "UngracefulDisconnect, " +
                     "Ungraceful disruption of MQTT commit, "
                     )
-    printDebug("mqttLastWill", mqttLastWill)
-    mqttClient.set_last_will(inMqttTopic, mqttLastWill)
+    printDebug("queue mqttLastWill", mqttLastWill)
+    mqttClient.set_last_will(topic, mqttLastWill)
 
     try:
         mqttClient.connect()
         print("## Connected with MQTT Broker", inMqttBroker)
         printDataDebug("ioMqttData", ioMqttData)
 
-        while(GLOBAL_MESSAGE_QUEUE.lenQ() > 0 and msgCount < inMqttSendLimit):
+        while(GLOBAL_MESSAGE_QUEUE.lenQ()[0] > 0 and msgCount < inMqttSendLimit):
             msg = GLOBAL_MESSAGE_QUEUE.getMsg()
-            inMqttClient.publish(inMqttTopic, json.dumps(msg))
-            ioMqCounter += 1
+            mqttClient.publish(topic, json.dumps(msg))
+            msgCount += 1
+            ioMqttCounter += 1
 
     except Exception as e:
         sys.print_exception(e)
-        errorMessage = mqttErrorMessage(inMqttClientUniqueId,
+        errorMessage = mqttErrorMessage(GLOBAL_MESSAGE_QUEUE.uniqueID(),
                                         "Exception",
                                         "MQTTClientConnectError",
                                         str(e),
                                         )
-        ioMqttData.append(errorMessage)
+        GLOBAL_MESSAGE_QUEUE.addMsg(errorMessage, "high")
+
     try:
         mqttClient.disconnect()
     except Exception as e:
         sys.print_exception(e)
-        errorMessage = mqttErrorMessage(inMqttClientUniqueId,
+        errorMessage = mqttErrorMessage(GLOBAL_MESSAGE_QUEUE.uniqueID(),
                                         "Exception",
                                         "MQTTClientDisconnectError",
                                         str(e),
                                         )
-        ioMqttData.append(errorMessage)
+        GLOBAL_MESSAGE_QUEUE.addMsg(errorMessage, "high")
     return ioMqttCounter
 
 def mqttCommit(ioMqttCounter,
@@ -859,9 +862,9 @@ def startupSequenz(inNic):
         timeDiff, outNtpResult, ioNtpLastSuccess = setLocalTime(-9999)
         eventTimer = eventScheduler(eventTimer,)
 
-    GLOBAL_MESSAGE_QUEUE.addMsg(["seconds": startTime,
+    GLOBAL_MESSAGE_QUEUE.addMsg({"seconds": startTime,
                                  "messageType" : MESSAGE_TYPES["deviceStart"],
-                                 "mesageContent":"Device has been started"])
+                                 "messageContent":"Device has been started"})
 
     print("Generate scan messages with timestamp")
     print("MemInfo", micropython.mem_info())
