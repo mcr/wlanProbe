@@ -20,6 +20,8 @@ import sys
 import socket
 import time
 import ubinascii
+import uping
+#import lib.messageQueue
 
 
 from umqtt.robust import MQTTClient
@@ -32,6 +34,7 @@ PLATFORM = sys.platform
 CONFIG = {
     "connectTerm": 121,
     "debug": False,
+    "dataDebug": False,
     "eventTimeDiff": 1,
     "httpEnabled": False,
     "httpRepeat": 10,
@@ -424,6 +427,13 @@ def printDebug(inName, inVariable):
         print(inName, type(inVariable), inVariable)
         time.sleep_ms(100)
 
+def printDataDebug(inName, inVariable):
+    if CONFIG["dataDebug"]:
+        if isinstance(inVariable, list):
+            print("")
+        print(inName, type(inVariable), inVariable)
+        time.sleep_ms(10)
+
 
 def mqttApplyConfig(inConfigData):
     for key in inConfigData.keys():
@@ -562,6 +572,7 @@ def mqttCommit(ioMqttCounter,
                inMqttTopic,
                inMqttClientUniqueId,
                ioMqttData):
+    uping.ping(inMqttBroker, 1)
     mqttClient = MQTTClient(inMqttClientUniqueId,
                             inMqttBroker,
                             ssl=CONFIG["mqttSSL"],
@@ -579,7 +590,7 @@ def mqttCommit(ioMqttCounter,
     try:
         mqttClient.connect()
         print("## Connected with MQTT Broker", inMqttBroker)
-        printDebug("ioMqttData", ioMqttData)
+        printDataDebug("ioMqttData", ioMqttData)
         ioMqttCounter = mqttPublish(ioMqttCounter,
                                     mqttClient,
                                     inMqttTopic,
@@ -629,23 +640,17 @@ def mqttErrorMessage(inMqttClientUniqueId,
 
 
 def mqttPublish(ioMqttCounter, inMqttClient, inMqttTopic, ioMqttData):
-    outData = str(ioMqttCounter) + ", "
-    printDebug("ioMqttData[0]", ioMqttData[0])
-    firstList = ioMqttData.pop(0)
-    if isinstance(firstList, list):
-        for i in firstList:
-            outData.join(str(i))
-            outData.join(", ")
-    else:
-        outData.join(firstList)
-    printDebug("outData", outData)
-    inMqttClient.publish(inMqttTopic, outData)
-    ioMqttCounter += 1
-    if len(ioMqttData) > 0:
-        ioMqttCounter = mqttPublish(ioMqttCounter,
-                                    inMqttClient,
-                                    inMqttTopic,
-                                    ioMqttData)
+    printDataDebug("ioMqttData", ioMqttData)
+
+    for item in ioMqttData:
+        #printDataDebug("item", str(item))
+        #printDataDebug("counter", str(ioMqttCounter))
+        item.insert(0, ioMqttCounter)
+        outData = str(item)
+        #printDataDebug("outData", outData)
+        inMqttClient.publish(inMqttTopic, outData)
+        ioMqttCounter += 1
+
     return ioMqttCounter
 
 
