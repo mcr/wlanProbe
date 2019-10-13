@@ -13,23 +13,22 @@ class mQ:
     def addMsg(self, inNewMessage, inPriority="low"):
         '''
         Receives a dictionary and saves in a message queue.
-        Dictonary looks like:
+        Dictionary looks like:
         { "seconds": 1337, "messageType": "Foo", "messageContent": "Bar",}
         '''
         if isinstance(inNewMessage, dict):
-            if inPriority == "low" and self._ntpHasBeenSet:
-                self._lowPrioQ.append(inNewMessage)
-            elif inPriority == "high" and self._ntpHasBeenSet:
-                self._lowPrioQnoNTP.append(inNewMessage)
-            elif inPriority == "low" and not self._ntpHasBeenSet:
-                self._lowPrioQ.append(inNewMessage)
-            else:
+            if inPriority == "high" and self._ntpHasBeenSet:
                 self._highPrioQ.append(inNewMessage)
+            elif inPriority == "low" and self._ntpHasBeenSet:
+                self._lowPrioQ.append(inNewMessage)
+            elif inPriority == "high" and not self._ntpHasBeenSet:
+                self._highPrioQnoNTP.append(inNewMessage)
+            else:
+                self._lowPrioQnoNTP.append(inNewMessage)
         else:
-            print("Incoming message is not a dictonary.")
-            sys.exit(1)
+            raise TypeError("Incoming message is not a dictionary.")
 
-    def _fixTimestamp():
+    def _fixTimestamp(self):
         for msg in self._highPrioQnoNTP:
             msg["seconds"] += self._timeDiff
             addMsg(msg, "high")
@@ -56,7 +55,7 @@ class mQ:
                             inMessage,
                             ):
         '''
-        Receives a single message in a dictonary and returns one.
+        Receives a single message in a dictionary and returns one.
         '''
         (year, month, day,
          hour, minute, seconds,
@@ -77,22 +76,21 @@ class mQ:
         }
 
         self._messageCounter += 1
-        printDebug("outWlanData", outWlanData)
         return outWlanData
 
     def getMsg(self):
         '''
-        Returns one dictonary if there is a message.
+        Returns one dictionary if there is a message.
         '''
         totalL, lenHp, _ = self.lenQ()
         if totalL == 0:
             output = {}
         elif lenHp != 0:
             msg = self._highPrioQ.pop(0)
-            output = _generateMessageList(msg)
+            output = self._generateMessageList(msg)
         else:
             msg = self._lowPrioQ.pop(0)
-            output = _generateMessageList(msg)
+            output = self._generateMessageList(msg)
         return output
 
     def lenQ(self):
@@ -112,4 +110,4 @@ class mQ:
         self._ntpHasBeenSet = True
         totalL, _, _, = self.lenQnoNTP()
         if totalL == 0:
-            _fixTimestamp()
+            self._fixTimestamp()
