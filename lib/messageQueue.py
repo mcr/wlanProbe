@@ -10,6 +10,9 @@ class mQ:
         self._timeDiff = 0
         self._uniqueID = inUniqueID
 
+    def uniqueID(self):
+        return self._uniqueID
+
     def addMsg(self, inNewMessage, inPriority="low"):
         '''
         Receives a dictionary and saves in a message queue.
