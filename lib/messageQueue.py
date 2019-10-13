@@ -75,6 +75,7 @@ class mQ:
             "messageType": inMessage["messageType"],
             "messageContent": inMessage["messageContent"],
         }
+
         self._messageCounter += 1
         printDebug("outWlanData", outWlanData)
         return outWlanData

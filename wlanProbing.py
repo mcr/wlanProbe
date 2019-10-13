@@ -23,6 +23,7 @@ import ubinascii
 import uping
 #import lib.messageQueue
 
+
 from umqtt.robust import MQTTClient
 from random import randint
 
@@ -35,6 +36,7 @@ CONFIG = {
     "debug": False,
     "dataDebug": False,
     "eventTimeDiff": 1,
+    "httpEnabled": False,
     "httpRepeat": 10,
     "httpSleepMS": 100,
     "httpURL": "http://10.128.128.1/20kb",
@@ -193,7 +195,10 @@ def connectedSchedule(
                                ioConnectTime -
                                randomDelay
                                )
-    httpMeasurement()
+    if CONFIG["httpEnabled"]:
+        httpMeasurement()
+    else:
+        print("HTTP measurement not enabled.")
     if secondsSinceLastConnect > CONFIG["connectTerm"]:
         disconnectData = disconnectWLAN(inNic)
         printDebug("Disconnect output in main()", disconnectData)
