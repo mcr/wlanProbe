@@ -32,6 +32,7 @@ PLATFORM = sys.platform
 CONFIG = {
     "connectTerm": 121,
     "debug": False,
+    "dataDebug": False,
     "eventTimeDiff": 1,
     "httpRepeat": 10,
     "httpSleepMS": 100,
@@ -420,6 +421,13 @@ def printDebug(inName, inVariable):
         print(inName, type(inVariable), inVariable)
         time.sleep_ms(100)
 
+def printDataDebug(inName, inVariable):
+    if CONFIG["dataDebug"]:
+        if isinstance(inVariable, list):
+            print("")
+        print(inName, type(inVariable), inVariable)
+        time.sleep_ms(10)
+
 
 def mqttApplyConfig(inConfigData):
     for key in inConfigData.keys():
@@ -576,7 +584,7 @@ def mqttCommit(ioMqttCounter,
     try:
         mqttClient.connect()
         print("## Connected with MQTT Broker", inMqttBroker)
-        printDebug("ioMqttData", ioMqttData)
+        printDataDebug("ioMqttData", ioMqttData)
         ioMqttCounter = mqttPublish(ioMqttCounter,
                                     mqttClient,
                                     inMqttTopic,
